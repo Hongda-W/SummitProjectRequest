@@ -1,0 +1,65 @@
+\input{preamble.tex}
+\title{%
+\bf{CU Research Computing Allocation Request} \\
+\Large Project Title Here
+}
+
+\author{Principal Investigator:  Michael H. Ritzwoller}
+
+\date{}							% Activate to display a given date or no date
+
+\begin{document}
+\maketitle
+%\section{}
+%\subsection{}
+\begin{abstract}
+    Please fill out this template when constructing an allocation request for Summit.
+\end{abstract}
+
+\section{Introduction and Summary}
+
+Provide background information:
+\begin{itemize}
+\item Concise Description
+\item Allocation goals
+\item Duration
+\item Expected follow-up
+\item Supporting grants
+\end{itemize}
+
+
+\section{Computational Details}
+
+For calculating cross-correlations of continuous seismic records, we use a parallel C++ code. The code was compiled using g++ compiler and -O3 flag was used. As for third-party libraries, it uses OpenMP runtime library. We run our code on shas partition, the cross-correlation code uses all the 24 cores on the each node. Our application doesn't require large amounts of RAM. Depending on the amount of data we assigned on each run, it typically take several days to 2 or 3 weeks for our jobs to run. Our application has well designed checkpoints, it can be restarted from a saved state. Our application is very I/O intense, the code checks the output files and continue the unfinished job from where it was terminated. We typically run our application on shas partition as our jobs don't require high memory and we are currently only using CPU to do the calculation.
+
+\subsection{CPU Time Request}
+
+ 
+\begin{table}
+\centering
+\begin{tabular}{| c | c | c | c | c | c | c|}
+\hline
+ Job Type & Node Type & Weight & Jobs& Cores & Hours & Total (SU)  \\\hline
+Cross-Correlation  & shas & 1 & 20 & 120 & 120 & 288,000 \\
+Inversion & shas & 1 & 100 & 72 & 96 & 691,200 \\ 
+Post-processing  & shas & 1 & 50 & 24 & 2 & 2,400 \\\hline
+Grand Total (SU)  & - & - &- & - &- &  2,390,016 \\\hline
+\end{tabular}
+\caption{\label{tab:SU}Requested SU on Summit.}
+\end{table}
+
+\section{Data Management}
+
+
+\begin{table}
+\centering
+\begin{tabular}{| c | c | c |}
+\hline
+ Job Type & Required Space (GB) & Number of Files \\\hline
+Cross-Correlation  & 10 & 1,000 \\
+Inversion & 1,000 & 10  \\ \hline
+\end{tabular}
+\caption{\label{tab:SU}Scratch-disk-space requirements.}
+\end{table}
+
+\end{document}  
