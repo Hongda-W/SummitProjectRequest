@@ -11,6 +11,12 @@
 % \usepackage{multirow}
 % \usepackage{booktabs}
 \usepackage[table]{xcolor}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=True,
+}
 
 \renewcommand{\abstractname}{Overview}
 
@@ -49,8 +55,18 @@ Provide background information:
 For calculating cross-correlations of continuous seismic records,
 we use a parallel C++ code.
 
-The code was compiled using g++ compiler and -O3 flag was used.
-As for third-party libraries, it uses OpenMP runtime library.
+As the time of execution is several orders of magnitude
+larger that of compilation,
+the code was compiled using g++ compiler
+with flag
+\begin{lstlisting}
+-O3 -lfftw3 -lstdc++ -lpthread -fopenmp
+\end{lstlisting}
+
+It's not a community model but one developed by our group alone.
+The link to the code is \url{https://github.com/NoisyLeon/Seed2Cor}
+As for third-party libraries, it uses OpenMP and FFTW.
+The code does not require the use of a container software.
 
 We run our code on shas partition.
 The cross-correlation code uses all the 24 cores on the each node.
