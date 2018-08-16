@@ -1,15 +1,10 @@
 \documentclass[11pt, oneside]{article}
+
+%% Packages
 \usepackage{geometry}
-\geometry{letterpaper}
 \usepackage{graphicx}
 \usepackage{amssymb}
-% \usepackage{graphicx,footmisc}
-% \usepackage{subfig,epstopdf}
-% \usepackage{natbib}
-% \usepackage{lineno,amsmath}
 \usepackage{authblk}
-% \usepackage{multirow}
-% \usepackage{booktabs}
 \usepackage[table]{xcolor}
 \usepackage{listings}
 \lstset{basicstyle=\ttfamily}
@@ -18,4 +13,5 @@
     colorlinks=True,
 }
 
+%% Commands
 \renewcommand{\abstractname}{Overview}
