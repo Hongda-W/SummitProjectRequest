@@ -1,95 +1,107 @@
-\input{req.cls}
+\documentclass[10pt, letterpaper]{article}
+\usepackage[letterpaper,margin=0.75in]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage[table]{xcolor}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\renewcommand{\abstractname}{Overview}
 
 \begin{document}
 
-\title{%
-\bf{CU Research Computing Allocation Request} \\
-\Large Project Title Here
-}
-\author{Principal Investigator:  Michael H. Ritzwoller}
-\date{}							% Activate to display a given date or no date
-
+\title{CU Research Computing Allocation Request}
+\author{Project Title Here}
+\date{}
+% Original draft, generated from pre-existing website content, by N. Featherstone, Jan 9, 2018
 \maketitle
 
+
 \begin{abstract}
-    Please fill out this template when constructing an allocation request for Summit.
+\noindent Please fill out this template when constructing an allocation request for Summit.  Be sure to address all of the bullet points in this worksheet. If you feel that some of the requested information is not applicable, please note why that is rather than leaving that section out of your request entirely.
+\\
+\\
+\noindent Requests for larger allocations will need more detailed justification. As a general guideline, a request for 300K SU might require a two-page proposal, while a 1M+ SU request might require three to five pages.
+\\
+\\
+\noindent \textbf{If you have questions when preparing this allocation request, please contact rc-help@colorado.edu.  We are happy to provide advice and answer any questions.}
+
 \end{abstract}
+\section{Introduction and Summary}\label{sec:intro}
+%\begin{center}
+%\textit{(Suggested length: X pages)}
+%\end{center}
+Provide some background information on your proposal in this section.  Particularly:
 
-\section{Introduction and Summary}
-
-Provide background information:
 \begin{itemize}
-\item Concise Description
-\item Allocation goals
-\item Duration
-\item Expected follow-up
-\item Supporting grants
+\item Concise Description - Describe the portion of the Project that this computational work supports.
+\item Allocation goals - Describe the anticipated goals for this particular effort as a subset of the Project goals.
+\item Duration: indicate if this allocation is for one year or until completion of a nearer-term goal whichever is sooner.
+\item Expected follow-up - indicate if this is the final allocation for the Project or if work will likely continue.
+\item Supporting grants - indicate funding agencies and grant numbers that support this work (if any).
 \end{itemize}
 
 
-\section{Computational Details}
 
-For calculating cross-correlations of continuous seismic records,
-we use a parallel C++ code.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                               Computational Details
+\section{Computational Details}\label{sec:method}
+%\begin{center}
+%\textit{(Suggested length: X pages)}
+%\end{center}
 
-As the time of execution is several orders of magnitude
-larger that of compilation,
-the code was compiled using g++ compiler
-with flag
-\begin{lstlisting}
--O3 -lfftw3 -lstdc++ -lpthread -fopenmp
-\end{lstlisting}
+For cross-correlations of continuous seismic records, we use a parallel C++ application to calculate. The code was compiled using g++ compiler and -O3 flag. As for third-party libraries, it uses OpenMP runtime library. We run our code on shas partition, the cross-correlation code uses all the 24 cores on the each node. Our application doesn't require large amounts of RAM. Depending on the amount of data we assigned and nodes requested on each run, it typically take one day to one week for our jobs to run. Our application has well designed checkpoints, it can be restarted from a saved state. Our application is very I/O intense, the code checks the output files and continue the unfinished job from where it was terminated. We typically run our application on shas partition as our jobs don't require high memory and we are currently only using CPU to do the calculation. \\ \\
+The other major application that we are going to run on Summit is a Monte-Carlo inversion code. The current version we plan to run is a parallel Python code. We are also going to run the inversion code on shas partition as it's not memory consuming. The inversion jobs usually run for several hours upto a week depending on the data size. \\ \\
+The scaling information for these two applications we're going to use is provided below.
 
-It's not a community model but one developed by our group alone.
-The link to the code is \url{https://github.com/NoisyLeon/Seed2Cor}
-As for third-party libraries, it uses OpenMP and FFTW.
-The code does not require the use of a container software.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                               TIME REQUEST
+\subsection{CPU Time Request}\label{sec:request}
+%\begin{center}
+%\textit{(Suggested length: X pages)}
+%\end{center}
 
-We run our code on shas partition.
-The cross-correlation code uses all the 24 cores on the each node.
-Our application doesn't require large amounts of RAM.
-Depending on the amount of data we assigned on each run,
-it typically take several days to 2 or 3 weeks for our jobs to run.
-Our application has well designed checkpoints,
-it can be restarted from a saved state.
-Our application is very I/O intense,
-the code checks the output files and
-continue the unfinished job from where it was terminated.
-We typically run our application on shas partition
-as our jobs don't require high memory and
-we are currently only using CPU to do the calculation.
+Our SU request detail is described in Table \ref{tab:worksheet}.
 
-{\color{red}Lili: add scaling analysis}
-
-\subsection{CPU Time Request}
-
-{\color{red}Hongda: estimation of upper/lower limits}
+Finally, refer to your scaling data and provide some brief justification for your choice of core counts for each job type.   For instance, given the example scaling data in Section \ref{sec:method}, we see that performance gains diminish substantially when running with 96 cores.  For such a performance profile, makes sense to run jobs with up to 48 cores, but running with 96 cores would be wasteful.
 
 \begin{table}
 \centering
 \begin{tabular}{| c | c | c | c | c | c | c|}
 \hline
- Job Type & Node Type & Weight & Jobs& Cores & Hours & Total (SU)  \\\hline
-Cross-Correlation  & shas & 1 & 20 & 120 & 120 & 288,000 \\
-Inversion & shas & 1 & 100 & 72 & 96 & 691,200 \\
-Post-processing  & shas & 1 & 50 & 24 & 2 & 2,400 \\\hline
-Grand Total (SU)  & - & - &- & - &- &  2,390,016 \\\hline
+ Job Type           & Node Type & Weight & Jobs  & Cores  & Hours & Total (SU)  \\\hline
+Cross-Correlation   & shas      & 1      & 100    & 24     & 160   & 384,000 \\
+Inversion           & shas      & 1      & 150   & 24     & 70    & 252,000 \\ 
+Post-processing     & shas      & 1      & 200   & 24     & 2     & 9,600 \\\hline
+Grand Total (SU)    & -         & -      &-      & -      &-      &  645,600 \\\hline
 \end{tabular}
-\caption{\label{tab:SU}Requested SU on Summit.}
+\caption{\label{tab:worksheet}SU request worksheet.}
 \end{table}
 
-\section{Data Management}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                               I/O
+\section{Data Management}\label{sec:IO}
+%\begin{center}
+%\textit{(Suggested length: X pages)}
+%\end{center}
+Our cross-correlation application is very I/O intensive. The typical job that we run each time has around 400 stations and each with 2 years of continuous data. We will have to request these continuous data from seismic data management centers, for dataset of such scale we expect 700 files each requires around 2GB space. From the original requested data, we extract daily 3-component seismic records this results in 1,400,000 files with size of around 2 MB each. We will then calculate cross-correlations between daily records from different stations, this will result in around 100,000,000 files and each file requires around 0.2 MB space. The original dataset that we requested will be removed after we calculate the daily cross-correlations (CC). We will stack the calculated daily cross-correlations to get our stacked CC products, for each job we expect to output 488,000 stacked files and each with around 0.2 MB size. All the I/O described here will be using /scratch storage. After we get the stacked CCs, we will make measurements on them and everything else on /scratch will be removed. \\ \\
+The inversion application and other post-processing are not very I/O intensive, we incorporate Hierarchical Data Format (HDF) to store and organize the results. We use local disk for I/O and for each job we expect 2 or 3 files with size of several GB each. The stacked cross-correlations and inversion results will be migrated to our local computer and we will make backups on our local disks.
 
-\begin{table}
+\begin{table}[h]
 \centering
-\begin{tabular}{| c | c | c |}
+\begin{tabular}{| l | l | l |}
 \hline
- Job Type & Required Space (GB) & Number of Files \\\hline
-Cross-Correlation  & 10 & 1,000 \\
-Inversion & 1,000 & 10  \\ \hline
+  Job Type            & Required Space (MB) & Number of Files  \\ \hline
+  Requested  & 2,000                   &           700   \\
+  Daily records  & 2                &             1,400,000   \\
+  Daily CC & 0.2 & 116,800,000 \\
+  Stacked CC & 0.2 & 488,000 \\
+\hline
 \end{tabular}
-\caption{\label{tab:storage}Scratch-disk-space requirements.}
+\caption{\label{tab:space}Scatch-disk-space requirements by job type.}
 \end{table}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                               DATA MANAGEMENT
 \end{document}
