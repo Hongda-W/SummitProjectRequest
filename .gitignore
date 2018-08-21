@@ -1,6 +1,7 @@
 # Custom
 *.pdf
 *.bib
+.ipynb_checkpoints/
 
 # From Tex.gitignore
 ## Core latex/pdflatex auxiliary files:
