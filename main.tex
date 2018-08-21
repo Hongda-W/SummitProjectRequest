@@ -4,6 +4,14 @@
 \usepackage{amsmath}
 \usepackage{multirow}
 \usepackage[table]{xcolor}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=True,
+    linkcolor=blue,
+    urlcolor=magenta,
+}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{5pt}
 \renewcommand{\abstractname}{Overview}
@@ -50,14 +58,37 @@ Provide some background information on your proposal in this section.  Particula
 %\textit{(Suggested length: X pages)}
 %\end{center}
 
-For cross-correlations of continuous seismic records, we use a parallel C++ application to calculate. The code was compiled using g++ compiler and -O3 flag. As for third-party libraries, it uses OpenMP runtime library. We run our code on shas partition, the cross-correlation code uses all the 24 cores on the each node. Our application doesn't require large amounts of RAM. Depending on the amount of data we assigned and nodes requested on each run, it typically take one day to one week for our jobs to run. Our application has well designed checkpoints, it can be restarted from a saved state. Our application is very I/O intense, the code checks the output files and continue the unfinished job from where it was terminated. We typically run our application on shas partition as our jobs don't require high memory and we are currently only using CPU to do the calculation. \\ \\
-The other major application that we are going to run on Summit is a Monte-Carlo inversion code. The current version we plan to run is a parallel Python code. We are also going to run the inversion code on shas partition as it's not memory consuming. The inversion jobs usually run for several hours up to a week depending on the data size. \\ \\
-The scaling information for these two applications we're going to use is provided below in Figure \ref{fig:scaling}. The applications we run are OpenMP parallel applications, so we only run our jobs on a single node. From the scaling results in Figure \ref{fig:scaling} which is a test run for single station inversion, we chose to use 24 cores for our jobs.
+We use a parallel C++ application for production
+and a parallel Python one for analysis.
+
+The products are cross-correlations of continuous seismic records.
+The code was compiled using \lstinline{g++} compiler.
+As the time of execution is several orders of magnitude
+larger that of compilation, the code is compiled with flag
+
+\begin{lstlisting}
+-O3 -lfftw3 -lstdc++ -lpthread -fopenmp
+\end{lstlisting}
+
+It's not a community model but one developed by our group alone (\url{https://github.com/NoisyLeon/Seed2Cor}).
+As for third-party libraries, it uses \lstinline{OpenMP} and \lstinline{FFTW}.
+The code does not require the use of a container software.
+We run our code on \lstinline{shas} partition, using all the 24 cores on each node. Our application doesn't require large amounts of RAM. Depending on the amount of data we assigned and nodes requested on each run, it typically takes one day to one week for our jobs to run. Our application has well-designed checkpoints, so it can be restarted from a saved state. Our application is very I/O intensive. We typically run our application on \lstinline{shas} partition as our jobs don't require high memory.
+We are using CPU alone to do the calculation currently.
+
+The other major application is a parallel inversion code in Python
+(\url{https://github.com/NoisyLeon/pyMCinv}).
+As it's not memory consuming, the inversion code would be run on \lstinline{shas} partition too. The time cost ranges from several hours up to a week depending on the size of data.
+
+The scaling analysis for these two applications is provided in Figure \ref{fig:scaling}.
+The applications are OpenMP parallel applications, so they are run on a single node.
+A maximum of 24 cores were used in Figure \ref{fig:scaling},
+which is a test run for unit inversion.
 
 \begin{figure}
 \centering
 \includegraphics[width=\textwidth, keepaspectratio=true]{scaling.pdf}
-\caption{\label{fig:scaling} Sample performance data for an example of test job run. (\textit{a}) Measured run time vs. number of cores.  (\textit{b}) Parallel efficiency as measured for different numbers of cores.}
+\caption{\label{fig:scaling} Sample performance data for a test run. (\textit{a}) Measured run time vs. number of cores.  (\textit{b}) Parallel efficiency vs. numbers of cores.}
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -67,17 +98,17 @@ The scaling information for these two applications we're going to use is provide
 %\textit{(Suggested length: X pages)}
 %\end{center}
 
-Our SU request detail is described in Table \ref{tab:worksheet}.
+Details of our SU request are described in Table \ref{tab:worksheet}.
 
 \begin{table}
 \centering
 \begin{tabular}{| c | c | c | c | c | c | c|}
 \hline
  Job Type           & Node Type & Weight & Jobs  & Cores  & Hours & Total (SU)  \\\hline
-Cross-Correlation   & shas      & 1      & 100    & 24     & 160   & 384,000 \\
-Inversion           & shas      & 1      & 150   & 24     & 70    & 252,000 \\ 
+Production          & shas      & 1      & 100   & 24     & 160   & 384,000 \\
+Inversion           & shas      & 1      & 150   & 24     & 70    & 252,000 \\
 Post-processing     & shas      & 1      & 200   & 24     & 2     & 9,600 \\\hline
-Grand Total (SU)    & -         & -      &-      & -      &-      &  645,600 \\\hline
+Grand Total (SU)    & -         & -      &-      & -      &-      & 645,600 \\\hline
 \end{tabular}
 \caption{\label{tab:worksheet}SU request worksheet.}
 \end{table}
@@ -89,21 +120,27 @@ Grand Total (SU)    & -         & -      &-      & -      &-      &  645,600 \\\
 %\begin{center}
 %\textit{(Suggested length: X pages)}
 %\end{center}
-Our cross-correlation application is very I/O intensive. The typical job that we run each time has around 400 stations and each with 2 years of continuous data. We will have to request these continuous data from seismic data management centers, for data-set of such scale we expect 700 files each requires around 2GB space. From the original requested data, we extract daily 3-component seismic records this results in 1,400,000 files with size of around 2 MB each. We will then calculate cross-correlations between daily records from different stations, this will result in around 100,000,000 files and each file requires around 0.2 MB space. The original data that we requested will be removed after we calculate the daily cross-correlations (CC). We will stack the calculated daily cross-correlations to get our stacked CC products, for each job we expect to output 488,000 stacked files and each with around 0.2 MB size. All the I/O described here will be using /scratch storage. After we get the stacked CCs, we will make measurements on them and everything else on /scratch will be removed. \\ \\
-The inversion application and other post-processing are not very I/O intensive, we incorporate Hierarchical Data Format (HDF) to store and organize the results. We use local disk for I/O and for each job we expect 2 or 3 files with size of several GB each. The stacked cross-correlations and inversion results will be migrated to our local computer and we will make backups on our local disks.
+Our cross-correlation application is very I/O intensive. The typical job that we run each time has around 400 stations with 2 years of continuous data. The continuous data are requested from seismic data management centers, e.g. IRIS (\url{http://ds.iris.edu/ds/}). For raw data of such scale, we expect 700 files, each $\sim$2GB. From the raw data, we extract daily 3-component seismic records and this results in 1,400,000 files, each $\sim$2 MB.
+Then cross-correlations are calculated between daily records from different stations, and this will result in around 100,000,000 files, each $\sim$0.2 MB.
+
+The raw data will be removed after the calculation of daily cross-correlations (CC). We will stack the daily CCs to get our stacked CC products. For each job, we expect to output 488,000 stacked files, each $\sim$0.2 MB. All the I/O described here will use \lstinline{/scratch} storage. After we get the stacked CCs, we will make measurements on them and everything else on \lstinline{/scratch} will be removed.
+
+The storage requirements are listed in Table \ref{tab:space}.
+
+The inversion application and other post-processing are not very I/O intensive, and we incorporate Hierarchical Data Format (HDF) to store and organize the results. We use local disk for I/O and for each job we expect 2 or 3 files, each with size of several GB. The stacked CC and inversion results will be migrated to our local computers and we will make backups on our group cluster and local disks.
 
 \begin{table}[h]
 \centering
 \begin{tabular}{| l | l | l |}
 \hline
-  Job Type            & Required Space (MB) & Number of Files  \\ \hline
-  Requested  & 2,000                   &           700   \\
-  Daily records  & 2                &             1,400,000   \\
-  Daily CC & 0.2 & 116,800,000 \\
-  Stacked CC & 0.2 & 488,000 \\
+  Job Type            & Required Space (TB) & Number of Files  \\ \hline
+  Requested           & 1.4                 & 700   \\
+  Raw                 & 2.8                 & 1,400,000   \\
+  Intermediate        & 23                  & 116,800,000 \\
+  Result              & 0.1                 & 488,000 \\
 \hline
 \end{tabular}
-\caption{\label{tab:space}Scatch-disk-space requirements by job type.}
+\caption{\label{tab:space}Scratch-disk-space requirements by job type.}
 \end{table}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
